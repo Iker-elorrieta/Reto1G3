@@ -4,13 +4,21 @@
   <artifactId>TitanFit</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-<depencendies>
+<dependencies>
+<!--Firestore-->
 	<dependency>
-    <groupId>com.google.firebase</groupId>
-    <artifactId>firebase-admin</artifactId>
-    <version>9.7.0</version>
+    	<groupId>com.google.firebase</groupId>
+    	<artifactId>firebase-admin</artifactId>
+    	<version>9.7.0</version>
 </dependency>
-</depencendies>
+
+<!--Import Hash-->
+	<dependency>
+    	<groupId>org.mindrot</groupId>
+    	<artifactId>jbcrypt</artifactId>
+    	<version>0.4</version>
+	</dependency>
+</dependencies>
   
   <build>
     <sourceDirectory>src</sourceDirectory>
