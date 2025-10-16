@@ -1,7 +1,6 @@
 package Modelo_Pojos;
 
 import java.util.Date;
-
 import org.mindrot.jbcrypt.BCrypt;
 
 
