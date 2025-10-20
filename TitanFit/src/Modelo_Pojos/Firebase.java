@@ -8,7 +8,7 @@ import com.google.firebase.FirebaseOptions;
 
 public class Firebase {
 
-	public void inicializarFirebase() throws Exception {
+	public static void inicializarFirebase() throws Exception {
 		FileInputStream serviceAccount = new FileInputStream("serviceAccount.json");
 		FirebaseOptions options = new FirebaseOptions.Builder()
 				.setCredentials(GoogleCredentials.fromStream(serviceAccount)).build();

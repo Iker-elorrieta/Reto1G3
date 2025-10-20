@@ -6,11 +6,12 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-		Firebase firebase = new Firebase();
-		firebase.inicializarFirebase();
+			Firebase.inicializarFirebase();
 		} catch (Exception e) {
 			e.printStackTrace();
+			return;
 		}
+		
 		Login frame = new Login();
 		frame.setVisible(true);
 	}

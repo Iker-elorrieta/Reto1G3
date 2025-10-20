@@ -39,19 +39,16 @@ public class Login extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
 
-        // Single content pane, absolute positioning (null layout)
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(10, 10, 10, 10));
         contentPane.setBackground(Color.WHITE);
         contentPane.setLayout(null); // absolute layout
         setContentPane(contentPane);
 
-        // Logo (will be set at runtime if available)
         JLabel lblLogo = new JLabel();
         lblLogo.setBounds(150, 20, 120, 120);
         contentPane.add(lblLogo);
 
-        // Usuario
         JLabel lblLoginUsuario = new JLabel("Usuario");
         lblLoginUsuario.setFont(new Font("SansSerif", Font.PLAIN, 14));
         lblLoginUsuario.setBounds(80, 160, 80, 22);
@@ -61,7 +58,6 @@ public class Login extends JFrame {
         textFieldLoginUsuario.setBounds(170, 156, 170, 28);
         contentPane.add(textFieldLoginUsuario);
 
-        // Contraseña
         JLabel lblLoginContraseña = new JLabel("Contraseña");
         lblLoginContraseña.setFont(new Font("SansSerif", Font.PLAIN, 14));
         lblLoginContraseña.setBounds(80, 200, 80, 22);
@@ -77,7 +73,6 @@ public class Login extends JFrame {
         	public void actionPerformed(ActionEvent e) {
         		char[] passwordChars = textFieldLoginContraseña.getPassword();
         		String password = new String(passwordChars);
-        		System.out.println(password);
         		
         		Usuario user = Controlador.LoginControlador.loginUsuario(textFieldLoginUsuario.getText(),password);
         		if ( user != null ) {
@@ -99,14 +94,20 @@ public class Login extends JFrame {
         JButton btnRegister = new JButton("Registrarse");
         btnRegister.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
-        		
+        		Registro registroFrame = new Registro();
+				registroFrame.setVisible(true);
+				Login.this.dispose();
         	}
         });
-        btnRegister.setBounds(215, 250, 140, 36);
+        btnRegister.setPreferredSize(new Dimension(140, 36));
         btnRegister.setFocusPainted(false);
         btnRegister.setBackground(Color.WHITE);
         btnRegister.setForeground(new Color(33, 150, 243));
         btnRegister.setBorderPainted(true);
+
+       
+
+        btnRegister.setBounds(215, 250, 140, 36);
         contentPane.add(btnRegister);
 
         // Fixed size so WindowBuilder can render; runtime centers the frame
