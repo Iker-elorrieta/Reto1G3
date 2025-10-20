@@ -94,7 +94,12 @@ public class Workouts extends JFrame {
 		btnHistorial.setPreferredSize(new Dimension(100, 28));
 		btnMiPerfil.setPreferredSize(new Dimension(100, 28));
 
-		btnMiPerfil.addActionListener(e -> JOptionPane.showMessageDialog(Workouts.this, "Perfil no implementado.", "Info", JOptionPane.INFORMATION_MESSAGE));
+		btnMiPerfil.addActionListener(e -> {
+			MiUsuario miUsuario = new MiUsuario(usuario);
+			miUsuario.setVisible(true);
+			Workouts.this.dispose();
+		});
+		
 
 		btnHistorial.addActionListener(e -> JOptionPane.showMessageDialog(Workouts.this, "Historial no implementado.", "Info", JOptionPane.INFORMATION_MESSAGE));
 

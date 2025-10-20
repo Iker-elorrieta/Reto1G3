@@ -164,25 +164,6 @@ public class MiUsuario extends JFrame {
 		txtNewPass.setColumns(20);
 		form.add(txtNewPass, gbcTxtNewPass);
 
-		// Confirm password (label)
-		GridBagConstraints gbcLblConfirm = new GridBagConstraints();
-		gbcLblConfirm.insets = baseInsets;
-		gbcLblConfirm.anchor = GridBagConstraints.WEST;
-		gbcLblConfirm.gridx = 0; gbcLblConfirm.gridy = 6;
-		JLabel lblConfirmPass = new JLabel("Confirmar contraseña:");
-		lblConfirmPass.setFont(labelFont);
-		form.add(lblConfirmPass, gbcLblConfirm);
-
-		// Confirm password (field)
-		GridBagConstraints gbcTxtConfirm = new GridBagConstraints();
-		gbcTxtConfirm.insets = baseInsets;
-		gbcTxtConfirm.anchor = GridBagConstraints.WEST;
-		gbcTxtConfirm.gridx = 1; gbcTxtConfirm.gridy = 6;
-		gbcTxtConfirm.weightx = 1; gbcTxtConfirm.fill = GridBagConstraints.HORIZONTAL;
-		final JPasswordField txtConfirmPass = new JPasswordField();
-		txtConfirmPass.setColumns(20);
-		form.add(txtConfirmPass, gbcTxtConfirm);
-
 		contentPane.add(form, BorderLayout.CENTER);
 
 		// Footer buttons
@@ -205,7 +186,13 @@ public class MiUsuario extends JFrame {
 		footer.add(btnGuardar);
 		contentPane.add(footer, BorderLayout.SOUTH);
 
-		btnCancelar.addActionListener(e -> MiUsuario.this.dispose());
+		btnCancelar.addActionListener(e ->{
+			Workouts main = new Workouts(usuario);
+			main.setVisible(true);
+			MiUsuario.this.dispose();
+			
+		} 
+				);
 
 		btnGuardar.addActionListener(e -> {
 			String nuevoNombre = txtNombre.getText().trim();
@@ -213,7 +200,6 @@ public class MiUsuario extends JFrame {
 			String nuevoEmail = txtEmail.getText().trim();
 			String fechaStr = txtFecha.getText().trim();
 			String nuevoPass = new String(txtNewPass.getPassword());
-			String confirmPass = new String(txtConfirmPass.getPassword());
 
 			if (nuevoNombre.isEmpty()) {
 				JOptionPane.showMessageDialog(MiUsuario.this, "El nombre no puede estar vacío.", "Error",
@@ -236,20 +222,6 @@ public class MiUsuario extends JFrame {
 				} catch (Exception ex) {
 					JOptionPane.showMessageDialog(MiUsuario.this, "Formato de fecha inválido. Use yyyy-MM-dd.", "Error",
 						JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-			}
-
-			// Handle password validation
-			if (!nuevoPass.isEmpty() || !confirmPass.isEmpty()) {
-				if (!nuevoPass.equals(confirmPass)) {
-					JOptionPane.showMessageDialog(MiUsuario.this, "La contraseña y la confirmación no coinciden.",
-						"Error", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-				if (nuevoPass.length() > 0 && nuevoPass.length() < 6) {
-					JOptionPane.showMessageDialog(MiUsuario.this, "La contraseña debe tener al menos 6 caracteres.",
-						"Error", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 			}
