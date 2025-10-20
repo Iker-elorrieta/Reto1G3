@@ -9,6 +9,7 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
 
+import Modelo_Pojos.Firebase;
 import Modelo_Pojos.Usuario;
 
 public class LoginGestor {

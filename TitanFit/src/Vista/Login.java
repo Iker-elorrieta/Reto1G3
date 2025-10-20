@@ -3,87 +3,139 @@ package Vista;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+
+import Modelo_Pojos.Usuario;
+
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-
-import java.awt.Image;
-import java.io.File;
-
-import javax.imageio.ImageIO;
+import javax.swing.JPasswordField;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+
+import java.awt.Image;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.io.File;
+import java.net.URL;
+import java.beans.Beans;
+
+import javax.imageio.ImageIO;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class Login extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private JPanel contentPane;
     private JTextField textFieldLoginUsuario;
-    private JTextField textFieldLoginContraseña;
+    private JPasswordField textFieldLoginContraseña;
 
     /**
      * Create the frame.
      */
     public Login() {
+        setTitle("TitanFit — Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(100, 100, 823, 683);
+        setResizable(false);
 
+        // Single content pane, absolute positioning (null layout)
         contentPane = new JPanel();
-        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+        contentPane.setBorder(new EmptyBorder(10, 10, 10, 10));
+        contentPane.setBackground(Color.WHITE);
+        contentPane.setLayout(null); // absolute layout
         setContentPane(contentPane);
-        contentPane.setLayout(null);
 
+        // Logo (will be set at runtime if available)
+        JLabel lblLogo = new JLabel();
+        lblLogo.setBounds(150, 20, 120, 120);
+        contentPane.add(lblLogo);
+
+        // Usuario
         JLabel lblLoginUsuario = new JLabel("Usuario");
-        lblLoginUsuario.setBounds(211, 226, 57, 14);
+        lblLoginUsuario.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        lblLoginUsuario.setBounds(80, 160, 80, 22);
         contentPane.add(lblLoginUsuario);
 
         textFieldLoginUsuario = new JTextField();
-        textFieldLoginUsuario.setBounds(355, 223, 222, 20);
-        textFieldLoginUsuario.setColumns(10);
+        textFieldLoginUsuario.setBounds(170, 156, 170, 28);
         contentPane.add(textFieldLoginUsuario);
 
-        textFieldLoginContraseña = new JTextField();
-        textFieldLoginContraseña.setBounds(355, 273, 222, 20);
-        textFieldLoginContraseña.setColumns(10);
-        contentPane.add(textFieldLoginContraseña);
-
+        // Contraseña
         JLabel lblLoginContraseña = new JLabel("Contraseña");
-        lblLoginContraseña.setBounds(211, 276, 57, 14);
+        lblLoginContraseña.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        lblLoginContraseña.setBounds(80, 200, 80, 22);
         contentPane.add(lblLoginContraseña);
 
-        JButton btnLogin = new JButton("Iniciar Sesion");
-        btnLogin.setBounds(469, 346, 157, 23);
+        textFieldLoginContraseña = new JPasswordField();
+        textFieldLoginContraseña.setBounds(170, 196, 170, 28);
+        contentPane.add(textFieldLoginContraseña);
+
+        // Buttons
+        JButton btnLogin = new JButton("Iniciar Sesión");
+        btnLogin.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		char[] passwordChars = textFieldLoginContraseña.getPassword();
+        		String password = new String(passwordChars);
+        		System.out.println(password);
+        		
+        		Usuario user = Controlador.LoginControlador.loginUsuario(textFieldLoginUsuario.getText(),password);
+        		if ( user != null ) {
+        			JFrame workouts =new Workouts(user);
+        			workouts.setVisible(true);
+				} else {
+					// Failed login
+					System.out.println("Login failed. Invalid username or password.");
+				}
+        		
+        	}
+        });
+        btnLogin.setBounds(65, 250, 140, 36);
+        btnLogin.setFocusPainted(false);
+        btnLogin.setBackground(new Color(33, 150, 243));
+        btnLogin.setForeground(Color.WHITE);
         contentPane.add(btnLogin);
 
         JButton btnRegister = new JButton("Registrarse");
-        btnRegister.setBounds(200, 346, 146, 23);
+        btnRegister.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		
+        	}
+        });
+        btnRegister.setBounds(215, 250, 140, 36);
+        btnRegister.setFocusPainted(false);
+        btnRegister.setBackground(Color.WHITE);
+        btnRegister.setForeground(new Color(33, 150, 243));
+        btnRegister.setBorderPainted(true);
         contentPane.add(btnRegister);
 
-        JLabel lblLogo = new JLabel("");
-        lblLogo.setBounds(273, 11, 263, 204);
+        // Fixed size so WindowBuilder can render; runtime centers the frame
+        setSize(new Dimension(420, 360));
 
-        File file = new File("Recursos/unnamed.png");
-        contentPane.add(lblLogo);
-    
-        try {
-            if (file.exists()) {
-                Image img = ImageIO.read(file);
-                if (img != null) {  
-                    Image scaledImg = img.getScaledInstance(lblLogo.getWidth(), lblLogo.getHeight(), Image.SCALE_SMOOTH);
+        // Runtime-only: load logo image and center the window
+        if (!Beans.isDesignTime()) {
+            try {
+                Image img = null;
+                URL res = getClass().getResource("/unnamed.png");
+                if (res != null) {
+                    img = ImageIO.read(res);
+                } else {
+                    File file = new File("Recursos/unnamed.png");
+                    if (file.exists()) {
+                        img = ImageIO.read(file);
+                    }
+                }
+
+                if (img != null) {
+                    Image scaledImg = img.getScaledInstance(120, 120, Image.SCALE_SMOOTH);
                     lblLogo.setIcon(new ImageIcon(scaledImg));
-                } 
-            } 
-          
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
-        contentPane.add(lblLogo);
+            setLocationRelativeTo(null);
+        }
     }
-    
-    public static void main(String[] args) {
-        java.awt.EventQueue.invokeLater(() -> {
-            new Login().setVisible(true);
-        });
-    }
-    
+
 }
