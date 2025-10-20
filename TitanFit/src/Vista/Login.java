@@ -11,6 +11,7 @@ import javax.swing.JTextField;
 import javax.swing.JPasswordField;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 
 import java.awt.Image;
 import java.awt.Color;
@@ -41,7 +42,7 @@ public class Login extends JFrame {
 
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(10, 10, 10, 10));
-        contentPane.setBackground(Color.WHITE);
+        contentPane.setBackground(new Color(245, 245, 239));
         contentPane.setLayout(null); // absolute layout
         setContentPane(contentPane);
 
@@ -79,8 +80,11 @@ public class Login extends JFrame {
         			JFrame workouts =new Workouts(user);
         			workouts.setVisible(true);
 				} else {
-					// Failed login
-					System.out.println("Login failed. Invalid username or password.");
+					// Failed login: show alert
+					JOptionPane.showMessageDialog(Login.this,
+					    "Usuario o contraseña incorrectos.",
+					    "Login",
+					    JOptionPane.ERROR_MESSAGE);
 				}
         		
         	}
@@ -117,7 +121,7 @@ public class Login extends JFrame {
         if (!Beans.isDesignTime()) {
             try {
                 Image img = null;
-                URL res = getClass().getResource("/unnamed.png");
+                URL res = getClass().getResource("/logo.png");
                 if (res != null) {
                     img = ImageIO.read(res);
                 } else {

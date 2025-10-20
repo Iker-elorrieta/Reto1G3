@@ -12,7 +12,6 @@ import javax.swing.border.EmptyBorder;
 import com.toedter.calendar.JDateChooser;
 
 import Modelo_Pojos.Usuario;
-import Modelo_Gestor.LoginGestor;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
@@ -26,20 +25,6 @@ public class Registro extends JFrame {
     private JPasswordField passwordField;
 
     /**
-     * Launch the application.
-     */
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            try {
-                Registro frame = new Registro();
-                frame.setVisible(true);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    /**
      * Create the frame.
      */
     public Registro() {
@@ -49,7 +34,7 @@ public class Registro extends JFrame {
 
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(16, 16, 16, 16));
-        contentPane.setBackground(Color.WHITE);
+        contentPane.setBackground(new Color(245, 245, 239));
         contentPane.setLayout(null);
         setContentPane(contentPane);
 
@@ -132,7 +117,7 @@ public class Registro extends JFrame {
                     usuario.setFechaNacimiento(fecha);
                     usuario.setNivel(0);
 
-                    boolean ok = LoginGestor.registrarUsuario(usuario, password);
+                    boolean ok = Controlador.LoginControlador.registrarUsuario(usuario, password);
                     if (ok) {
                         JOptionPane.showMessageDialog(Registro.this, "Registro correcto. Puedes iniciar sesión.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
                         Login loginFrame = new Login();

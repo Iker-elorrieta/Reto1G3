@@ -1,6 +1,7 @@
 package Modelo_Pojos;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Workout {
 
@@ -8,12 +9,14 @@ public class Workout {
 	private String nombre;
 	private int numeroEjercicios;
 	private ArrayList<Ejercicio> ejercicios;
+	private String video;
 	
 	
-	public Workout(int nivel, String nombre, int numeroEjercicios, ArrayList<Ejercicio> ejercicios) {
+	public Workout(int nivel, String nombre, int numeroEjercicios, ArrayList<Ejercicio> ejercicios, String video) {
 		this.nivel = nivel;
 		this.nombre = nombre;
 		this.numeroEjercicios = numeroEjercicios;
+		this.video = video;
 		this.ejercicios = ejercicios;
 	}
 	
@@ -22,6 +25,7 @@ public class Workout {
 		this.nombre = null;
 		this.numeroEjercicios = 0;
 		this.ejercicios = null;
+		this.video = null;
 	}
 
 	public int getNivel() {
@@ -46,6 +50,14 @@ public class Workout {
 
 	public void setNumeroEjercicios(int numeroEjercicios) {
 		this.numeroEjercicios = numeroEjercicios;
+	}
+	
+	public String getVideo() {
+		return video;
+	}
+
+	public void setVideo(String video) {
+		this.video = video;
 	}
 
 	public ArrayList<Ejercicio> getEjercicios() {
