@@ -40,15 +40,16 @@ public class WorkoutGestor {
 						.getDocuments()) {
 					String ejNombre = ejDoc.getId();
 					String descripcion = ejDoc.getString("descripcion");
-					String url = ejDoc.getString("video");
+					String foto = ejDoc.getString("foto");
+					int tiempo = ejDoc.getLong("tiempo").intValue() ;
 
-					ejercicios.add(new Ejercicio(ejNombre, descripcion, url));
+					ejercicios.add(new Ejercicio(ejNombre, descripcion, foto, tiempo));
 				}
 				w.setEjercicios(new ArrayList<Ejercicio>(ejercicios));
 
 				String v = workoutDoc.getString("video");
 				if (v == null && !ejercicios.isEmpty()) {
-					v = ejercicios.get(0).getUrlVideo();
+					v = ejercicios.get(0).getFoto();
 				}
 				w.setVideo(v);
 

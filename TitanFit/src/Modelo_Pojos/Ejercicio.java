@@ -4,19 +4,23 @@ public class Ejercicio {
 
 	private String nombre;
 	private String descripcion;
-	private String urlVideo;
-	
-	public Ejercicio(String nombre, String descripcion, String urlVideo) {
+	private String foto;
+	private int duracion;
+
+	public Ejercicio(String nombre, String descripcion, String imagen, int duracion) {
+		super();
 		this.nombre = nombre;
 		this.descripcion = descripcion;
-		this.urlVideo = urlVideo;
+		this.foto = imagen;
+		this.duracion = duracion;
 	}
-	
+
 	public Ejercicio() {
+		super();
 		this.nombre = null;
 		this.descripcion = null;
-		this.urlVideo = null;
-	
+		this.foto = null;
+		this.duracion = 0;
 	}
 
 	public String getNombre() {
@@ -35,13 +39,20 @@ public class Ejercicio {
 		this.descripcion = descripcion;
 	}
 
-	public String getUrlVideo() {
-		return urlVideo;
+	public String getFoto() {
+		return foto;
 	}
 
-	public void setUrlVideo(String urlVideo) {
-		this.urlVideo = urlVideo;
+	public void setFoto(String foto) {
+		this.foto = foto;
 	}
-	
-	
+
+	public int getDuracion() {
+		return duracion;
+	}
+
+	public void setDuracion(int duracion) {
+		this.duracion = duracion;
+	}
+
 }

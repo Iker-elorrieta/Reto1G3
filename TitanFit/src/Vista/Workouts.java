@@ -1,17 +1,18 @@
 package Vista;
 
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import Modelo_Pojos.Usuario;
+import Modelo_Pojos.Ejercicio;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.BorderFactory;
@@ -19,6 +20,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import javax.swing.AbstractCellEditor;
 import javax.swing.table.TableCellEditor;
+import javax.swing.ListSelectionModel;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -30,7 +32,6 @@ import java.awt.Desktop;
 import java.net.URI;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Collections;
@@ -38,24 +39,24 @@ import java.util.stream.Collectors;
 
 import Modelo_Pojos.Workout;
 
-/**
- * Workouts visual window.
- * - Loads workouts in background.
- * - Filters by user level with a combo.
- * - 'Ver Video' button opens workout.video URL.
- */
 public class Workouts extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private JTable tableWorkouts;
+	private JTable tableEjercicios;
 	private JComboBox<String> comboNiveles;
 	private DefaultTableModel model;
+	private DefaultTableModel modelEjercicios;
 	private List<Workout> workoutsData = new ArrayList<>();
 	private List<Workout> visibleData = new ArrayList<>();
 	private int nivelUsuario = 0;
+	private Workout workoutSeleccionado = null;
+	private JButton btnIniciar;
+	private Usuario usuario; 
 
 	public Workouts(Usuario usuario) {
+		this.usuario = usuario;
 		setTitle("TitanFit — Workouts");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
@@ -72,7 +73,7 @@ public class Workouts extends JFrame {
 		contentPane.add(topPanel, BorderLayout.NORTH);
 
 		String nombre = (usuario != null && usuario.getNombre() != null) ? usuario.getNombre() : "Usuario";
-		JLabel lblGreeting = new JLabel("¡Hola, " + nombre + "!");
+		JLabel lblGreeting = new JLabel("¡Hola, " + nombre + "! (Nivel " + nivelUsuario + ")");
 		lblGreeting.setFont(new Font("SansSerif", Font.BOLD, 20));
 		lblGreeting.setForeground(new Color(33, 150, 243));
 		lblGreeting.setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 6, 6, 6));
@@ -107,9 +108,17 @@ public class Workouts extends JFrame {
 		topRight.add(btnMiPerfil);
 		topPanel.add(topRight, BorderLayout.EAST);
 
-		JPanel centerPanel = new JPanel(new BorderLayout(8, 8));
-		centerPanel.setBackground(new Color(245, 245, 239));
-		contentPane.add(centerPanel, BorderLayout.CENTER);
+		// Panel principal con JSplitPane
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		splitPane.setDividerLocation(450);
+		splitPane.setEnabled(false);
+		splitPane.setBackground(new Color(245, 245, 239));
+		contentPane.add(splitPane, BorderLayout.CENTER);
+
+		// Panel izquierdo: Lista de workouts
+		JPanel leftPanel = new JPanel(new BorderLayout(8, 8));
+		leftPanel.setBackground(new Color(245, 245, 239));
+		splitPane.setLeftComponent(leftPanel);
 
 		JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
 		filterPanel.setBackground(new Color(245, 245, 239));
@@ -121,7 +130,7 @@ public class Workouts extends JFrame {
 		comboNiveles.addActionListener(e -> applyFilter());
 		filterPanel.add(lblFiltro);
 		filterPanel.add(comboNiveles);
-		centerPanel.add(filterPanel, BorderLayout.NORTH);
+		leftPanel.add(filterPanel, BorderLayout.NORTH);
 
 		String[] columnNames = { "Nombre", "# Ejercicios", "Nivel", "Video" };
 		model = new DefaultTableModel(columnNames, 0) {
@@ -135,12 +144,71 @@ public class Workouts extends JFrame {
 
 		tableWorkouts = new JTable(model);
 		tableWorkouts.setRowHeight(30);
+		tableWorkouts.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tableWorkouts.getTableHeader().setReorderingAllowed(false);
 		tableWorkouts.getColumn("Video").setCellRenderer(new ButtonRenderer("Ver Video"));
 		tableWorkouts.getColumn("Video").setCellEditor(new ButtonEditor("Ver Video"));
+		
+		// Listener para selección de workout
+		tableWorkouts.getSelectionModel().addListSelectionListener(e -> {
+			if (!e.getValueIsAdjusting()) {
+				int selectedRow = tableWorkouts.getSelectedRow();
+				if (selectedRow >= 0 && selectedRow < visibleData.size()) {
+					workoutSeleccionado = visibleData.get(selectedRow);
+					mostrarEjerciciosDelWorkout();
+				}
+			}
+		});
 
 		JScrollPane scroll = new JScrollPane(tableWorkouts);
-		centerPanel.add(scroll, BorderLayout.CENTER);
+		leftPanel.add(scroll, BorderLayout.CENTER);
+
+		// Panel derecho: Detalles del workout y ejercicios
+		JPanel rightPanel = new JPanel(new BorderLayout(8, 8));
+		rightPanel.setBackground(new Color(245, 245, 239));
+		splitPane.setRightComponent(rightPanel);
+
+		JLabel lblEjerciciosTitle = new JLabel("Ejercicios del Workout");
+		lblEjerciciosTitle.setFont(new Font("SansSerif", Font.BOLD, 16));
+		lblEjerciciosTitle.setForeground(new Color(33, 150, 243));
+		lblEjerciciosTitle.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
+		lblEjerciciosTitle.setBackground(new Color(245, 245, 239));
+		lblEjerciciosTitle.setOpaque(true);
+		rightPanel.add(lblEjerciciosTitle, BorderLayout.NORTH);
+
+		String[] columnNamesEjercicios = { "#", "Nombre", "Descripción" };
+		modelEjercicios = new DefaultTableModel(columnNamesEjercicios, 0) {
+			@Override
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
+		};
+		modelEjercicios.addRow(new Object[] { "", "Selecciona un workout", "" });
+
+		tableEjercicios = new JTable(modelEjercicios);
+		tableEjercicios.setRowHeight(30);
+		tableEjercicios.getTableHeader().setReorderingAllowed(false);
+		tableEjercicios.getColumnModel().getColumn(0).setPreferredWidth(30);
+		tableEjercicios.getColumnModel().getColumn(0).setMaxWidth(40);
+		tableEjercicios.getColumnModel().getColumn(1).setPreferredWidth(120);
+
+		JScrollPane scrollEjercicios = new JScrollPane(tableEjercicios);
+		rightPanel.add(scrollEjercicios, BorderLayout.CENTER);
+
+		// Panel con botón Iniciar
+		JPanel panelIniciar = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 8));
+		panelIniciar.setBackground(new Color(245, 245, 239));
+		btnIniciar = new JButton("Iniciar Workout");
+		btnIniciar.setPreferredSize(new Dimension(180, 35));
+		btnIniciar.setFont(new Font("SansSerif", Font.BOLD, 14));
+		btnIniciar.setFocusPainted(false);
+		btnIniciar.setBackground(new Color(76, 175, 80));
+		btnIniciar.setForeground(Color.WHITE);
+		btnIniciar.setBorderPainted(false);
+		btnIniciar.setEnabled(false);
+		btnIniciar.addActionListener(e -> iniciarWorkout());
+		panelIniciar.add(btnIniciar);
+		rightPanel.add(panelIniciar, BorderLayout.SOUTH);
 
 		JPanel bottomPanel = new JPanel(new BorderLayout());
 		bottomPanel.setBackground(Color.WHITE);
@@ -154,7 +222,7 @@ public class Workouts extends JFrame {
 		bottomPanel.add(btnAtras, BorderLayout.WEST);
 		contentPane.add(bottomPanel, BorderLayout.SOUTH);
 
-		setSize(new Dimension(820, 520));
+		setSize(new Dimension(1000, 520));
 		setLocationRelativeTo(null);
 
 		loadWorkouts();
@@ -186,34 +254,39 @@ public class Workouts extends JFrame {
 
 	private void populateLevels() {
 		comboNiveles.removeAllItems();
+		
 		int total = workoutsData.size();
 		comboNiveles.addItem("Todos los niveles (" + total + ")");
-		comboNiveles.addItem("Hasta mi nivel (" + nivelUsuario + ")");
 
-		// Count workouts per existing level and list only those levels
 		Map<Integer, Long> counts = workoutsData.stream()
 			.collect(Collectors.groupingBy(Workout::getNivel, LinkedHashMap::new, Collectors.counting()));
+		
 		ArrayList<Integer> levels = new ArrayList<>(counts.keySet());
 		Collections.sort(levels);
+		
 		for (Integer lvl : levels) {
-			comboNiveles.addItem("Nivel " + lvl + " (" + counts.get(lvl) + ")");
+			String accesible = (lvl <= nivelUsuario) ? "" : " 🔒";
+			comboNiveles.addItem("Nivel " + lvl + " (" + counts.get(lvl) + ")" + accesible);
 		}
-		// Default to 'Hasta mi nivel'
-		if (comboNiveles.getItemCount() >= 2) comboNiveles.setSelectedIndex(1);
+		
+		// Seleccionar por defecto "Todos los niveles"
+		if (comboNiveles.getItemCount() >= 1) comboNiveles.setSelectedIndex(0);
 	}
 
 	private void applyFilter() {
 		if (model == null) return;
 		model.setRowCount(0);
 		visibleData.clear();
+		workoutSeleccionado = null;
+		limpiarEjercicios();
+		
 		String sel = (String) comboNiveles.getSelectedItem();
 		for (Workout w : workoutsData) {
 			int nivel = w.getNivel();
 			boolean include = false;
-			if (sel == null || sel.startsWith("Hasta mi nivel")) {
-				include = nivel <= nivelUsuario;
-			} else if (sel.startsWith("Todos los niveles")) {
-				include = true;
+			
+			if (sel == null || sel.startsWith("Todos los niveles")) {
+				include = true; // Mostrar todos los niveles
 			} else if (sel.startsWith("Nivel ")) {
 				try {
 					String lvStr = sel.substring("Nivel ".length());
@@ -222,15 +295,91 @@ public class Workouts extends JFrame {
 					include = nivel == Integer.parseInt(lvStr.trim());
 				} catch (Exception ignore) { include = false; }
 			}
+			
 			if (include) {
 				visibleData.add(w);
-				model.addRow(new Object[] { w.getNombre(), w.getNumeroEjercicios(), nivel, "Ver Video" });
+				String nombreWorkout = w.getNombre();
+				// Añadir candado visual a workouts no accesibles
+				if (nivel > nivelUsuario) {
+					nombreWorkout = "🔒 " + nombreWorkout;
+				}
+				model.addRow(new Object[] { nombreWorkout, w.getNumeroEjercicios(), nivel, "Ver Video" });
 			}
 		}
 		if (model.getRowCount() == 0) model.addRow(new Object[] { "Sin resultados", "", "", "" });
 	}
 
-	// Renderer to show a non-functional button in the table's Video column
+	private void mostrarEjerciciosDelWorkout() {
+		modelEjercicios.setRowCount(0);
+		btnIniciar.setEnabled(false);
+		
+		if (workoutSeleccionado == null) {
+			modelEjercicios.addRow(new Object[] { "", "Selecciona un workout", "" });
+			return;
+		}
+
+		ArrayList<Ejercicio> ejercicios = workoutSeleccionado.getEjercicios();
+		
+		boolean workoutBloqueado = workoutSeleccionado.getNivel() > nivelUsuario;
+		
+		if (ejercicios == null || ejercicios.isEmpty()) {
+			modelEjercicios.addRow(new Object[] { "", "No hay ejercicios disponibles", "" });
+		} else {
+			
+			for (int i = 0; i < ejercicios.size(); i++) {
+				Ejercicio ej = ejercicios.get(i);
+				String numero = workoutBloqueado ? "🔒" : String.valueOf(i + 1);
+				String nombre = ej.getNombre() != null ? ej.getNombre() : "Sin nombre";
+				String descripcion = ej.getDescripcion() != null ? ej.getDescripcion() : "Sin descripción";
+				
+				modelEjercicios.addRow(new Object[] { numero, nombre, descripcion });
+			}
+			
+			if (!workoutBloqueado) {
+				btnIniciar.setEnabled(true);
+			}
+		}
+	}
+
+	private void limpiarEjercicios() {
+		modelEjercicios.setRowCount(0);
+		modelEjercicios.addRow(new Object[] { "", "Selecciona un workout", "" });
+		btnIniciar.setEnabled(false);
+	}
+
+	private void iniciarWorkout() {
+		if (workoutSeleccionado == null) {
+			JOptionPane.showMessageDialog(this, 
+				"Por favor selecciona un workout primero.", 
+				"Info", 
+				JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		
+		if (workoutSeleccionado.getNivel() > nivelUsuario) {
+			JOptionPane.showMessageDialog(this, 
+				"Este workout está bloqueado.\n\n" +
+				"Nivel requerido: " + workoutSeleccionado.getNivel() + "\n" +
+				"Tu nivel actual: " + nivelUsuario + "\n\n" +
+				"¡Sigue entrenando para desbloquearlo!", 
+				"Workout Bloqueado", 
+				JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+		
+		if (workoutSeleccionado.getEjercicios() == null || workoutSeleccionado.getEjercicios().isEmpty()) {
+			JOptionPane.showMessageDialog(this, 
+				"Este workout no tiene ejercicios disponibles.", 
+				"Sin Ejercicios", 
+				JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+		
+		Vista.Ejercicio ventanaEjercicio = new Vista.Ejercicio(workoutSeleccionado, usuario);
+		ventanaEjercicio.setVisible(true);
+		this.dispose();
+	}
+
 	private static class ButtonRenderer extends JButton implements TableCellRenderer {
 		private static final long serialVersionUID = 1L;
 
@@ -251,7 +400,6 @@ public class Workouts extends JFrame {
 		}
 	}
 
-	// Editor to handle button clicks and open the first exercise URL
 	private class ButtonEditor extends AbstractCellEditor implements TableCellEditor {
 		private static final long serialVersionUID = 1L;
 		private final JButton button;
