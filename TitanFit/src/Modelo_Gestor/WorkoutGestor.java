@@ -41,9 +41,13 @@ public class WorkoutGestor {
 					String ejNombre = ejDoc.getId();
 					String descripcion = ejDoc.getString("descripcion");
 					String foto = ejDoc.getString("foto");
-					int tiempo = ejDoc.getLong("tiempo").intValue() ;
+					Long tiempoMs = ejDoc.getLong("tiempo");
+					int duracionSeg = 0;
+					if (tiempoMs != null) {
+						duracionSeg = (int) (tiempoMs / 1000L);
+					}
 
-					ejercicios.add(new Ejercicio(ejNombre, descripcion, foto, tiempo));
+					ejercicios.add(new Ejercicio(ejNombre, descripcion, foto, duracionSeg));
 				}
 				w.setEjercicios(new ArrayList<Ejercicio>(ejercicios));
 
