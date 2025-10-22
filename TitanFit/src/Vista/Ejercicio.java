@@ -4,9 +4,11 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.List;
 
 import Modelo_Pojos.Usuario;
 import Modelo_Pojos.Workout;
+import Modelo_Pojos.Serie;
 
 public class Ejercicio extends JFrame {
 
@@ -19,7 +21,6 @@ public class Ejercicio extends JFrame {
 	private ArrayList<Modelo_Pojos.Ejercicio> ejercicios;
 	private int ejercicioActualIndex = 0;
 	private int serieActual = 0;
-	private int totalSeries = 0; // dinámico: igual al número de ejercicios del workout
 	
 	// Componentes de interfaz
 	private JLabel lblCronometroWorkout;
@@ -28,8 +29,14 @@ public class Ejercicio extends JFrame {
 	private JLabel lblProgresoEjercicios;
 	private JButton btnIniciar;
 	private JButton btnSalir;
-	private JLabel[] lblTiemposSeries;
 	private JLabel lblEstadoActual;
+	private JPanel seriesPanel; // will show series of current exercise
+	private List<JLabel> lblTiemposSeries; // labels for each serie time
+	
+	// Timer state
+	private javax.swing.Timer timer;
+	private int remainingSeconds = 0; // time left for current countdown (work or rest)
+	private boolean inDescanso = false;
 	
 	// Colores - Usando el mismo esquema de Workouts
 	private Color colorFondo = new Color(245, 245, 239);
@@ -47,9 +54,6 @@ public class Ejercicio extends JFrame {
 		this.usuario = usuario;
 		this.ejercicios = workout.getEjercicios();
 
-		// Determinar cuántas "series" mostrar: una por ejercicio
-		this.totalSeries = (this.ejercicios == null) ? 0 : this.ejercicios.size();
-		
 		setTitle("TitanFit — Entrenamiento en Progreso");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
@@ -107,12 +111,12 @@ public class Ejercicio extends JFrame {
 		lblSeparador3.setForeground(new Color(180, 180, 180));
 		infoPanel.add(lblSeparador3);
 		
-		JLabel lblDescanso = new JLabel("Descanso:");
-		lblDescanso.setFont(new Font("SansSerif", Font.PLAIN, 14));
-		lblDescanso.setForeground(colorTexto);
-		infoPanel.add(lblDescanso);
+		JLabel lblDescansoLabel = new JLabel("Descanso:");
+		lblDescansoLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		lblDescansoLabel.setForeground(colorTexto);
+		infoPanel.add(lblDescansoLabel);
 		
-		lblDescanso = new JLabel("00:00:00");
+		JLabel lblDescanso = new JLabel("00:00:00");
 		lblDescanso.setFont(new Font("SansSerif", Font.BOLD, 16));
 		lblDescanso.setForeground(colorVerde);
 		infoPanel.add(lblDescanso);
@@ -130,11 +134,9 @@ public class Ejercicio extends JFrame {
 		// Nombre del ejercicio
 		String nombre0 = "Sin ejercicios";
 		String desc0 = "";
-		int dur0 = 0;
 		if (ejercicios != null && !ejercicios.isEmpty()) {
 			nombre0 = ejercicios.get(0).getNombre() != null ? ejercicios.get(0).getNombre() : "Sin nombre";
 			desc0 = ejercicios.get(0).getDescripcion() != null ? ejercicios.get(0).getDescripcion() : "";
-			dur0 = ejercicios.get(0).getDuracion();
 		}
 		lblNombreEjercicio = new JLabel(nombre0);
 		lblNombreEjercicio.setFont(new Font("SansSerif", Font.BOLD, 24));
@@ -155,75 +157,16 @@ public class Ejercicio extends JFrame {
 		lblDescripcionEjercicio.setBorder(new EmptyBorder(10, 0, 20, 0));
 		middlePanel.add(lblDescripcionEjercicio, BorderLayout.NORTH);
 		
-		// Panel de series (una columna por ejercicio)
-		JPanel seriesPanel = new JPanel(new GridLayout(1, Math.max(1, totalSeries), 15, 0));
+		// Panel de series: show only series for the current exercise
+		seriesPanel = new JPanel();
 		seriesPanel.setBackground(Color.WHITE);
+		seriesPanel.setLayout(new BoxLayout(seriesPanel, BoxLayout.Y_AXIS));
 		middlePanel.add(seriesPanel, BorderLayout.CENTER);
 		
-		lblTiemposSeries = new JLabel[Math.max(1, totalSeries)];
+		lblTiemposSeries = new ArrayList<>();
 		
-		if (totalSeries == 0) {
-			// placeholder cuando no hay ejercicios
-			JPanel panelVacio = new JPanel();
-			panelVacio.setBackground(new Color(250,250,250));
-			panelVacio.add(new JLabel("No hay ejercicios"));
-			seriesPanel.add(panelVacio);
-		} else {
-			for (int i = 0; i < totalSeries; i++) {
-				Modelo_Pojos.Ejercicio ej = ejercicios.get(i);
-				JPanel panelSerie = new JPanel();
-				panelSerie.setLayout(new BoxLayout(panelSerie, BoxLayout.Y_AXIS));
-				panelSerie.setBackground(new Color(250, 250, 250));
-				panelSerie.setBorder(BorderFactory.createCompoundBorder(
-					BorderFactory.createLineBorder(new Color(220, 220, 220), 1),
-					new EmptyBorder(15, 15, 15, 15)
-				));
-				
-				// Obtener la foto para este ejercicio
-				String fotoPath = ej != null ? ej.getFoto() : null;
-				JLabel lblImagen = new JLabel();
-				lblImagen.setAlignmentX(Component.CENTER_ALIGNMENT);
-				lblImagen.setHorizontalAlignment(SwingConstants.CENTER);
-				lblImagen.setPreferredSize(new Dimension(100, 100));
-				if (fotoPath != null && !fotoPath.isEmpty()) {
-					try {
-						ImageIcon icon;
-						if (fotoPath.startsWith("http")) {
-							icon = new ImageIcon(new java.net.URL(fotoPath));
-						} else {
-							icon = new ImageIcon(fotoPath);
-						}
-						Image img = icon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
-						lblImagen.setIcon(new ImageIcon(img));
-					} catch (Exception e) {
-						lblImagen.setText("Sin imagen");
-					}
-				} else {
-					lblImagen.setText("Sin imagen");
-				}
-				panelSerie.add(lblImagen);
-				panelSerie.add(Box.createRigidArea(new Dimension(0, 10)));
-				
-				// Mostrar el nombre del ejercicio en lugar de "Serie X"
-				String nombreEj = ej != null && ej.getNombre() != null ? ej.getNombre() : ("Ejercicio " + (i+1));
-				JLabel lblSerieNum = new JLabel(nombreEj);
-				lblSerieNum.setFont(new Font("SansSerif", Font.BOLD, 16));
-				lblSerieNum.setForeground(colorPrimario);
-				lblSerieNum.setAlignmentX(Component.CENTER_ALIGNMENT);
-				panelSerie.add(lblSerieNum);
-				
-				panelSerie.add(Box.createRigidArea(new Dimension(0, 10)));
-				
-				int durationSec = ej != null ? ej.getDuracion() : 0; // usar la duración real del ejercicio (en segundos)
-				lblTiemposSeries[i] = new JLabel(formatTime(durationSec));
-				lblTiemposSeries[i].setFont(new Font("SansSerif", Font.BOLD, 28));
-				lblTiemposSeries[i].setForeground(colorTexto);
-				lblTiemposSeries[i].setAlignmentX(Component.CENTER_ALIGNMENT);
-				panelSerie.add(lblTiemposSeries[i]);
-				
-				seriesPanel.add(panelSerie);
-			}
-		}
+		// Initial render of series for exercise 0
+		updateSeriesDisplay();
 		
 		// Estado actual (cuenta regresiva, en serie, descanso, etc.)
 		lblEstadoActual = new JLabel("Presiona Iniciar para comenzar");
@@ -245,7 +188,7 @@ public class Ejercicio extends JFrame {
 		btnIniciar.setFocusPainted(false);
 		btnIniciar.setBorderPainted(false);
 		btnIniciar.setPreferredSize(new Dimension(180, 40));
-		// Sin funcionalidad por ahora
+		btnIniciar.addActionListener(e -> onStartClicked());
 		bottomPanel.add(btnIniciar);
 		
 		btnSalir = new JButton("Salir");
@@ -255,7 +198,7 @@ public class Ejercicio extends JFrame {
 		btnSalir.setFocusPainted(false);
 		btnSalir.setBorder(BorderFactory.createLineBorder(colorRojo, 2));
 		btnSalir.setPreferredSize(new Dimension(180, 40));
-		btnSalir.addActionListener(e ->{
+		btnSalir.addActionListener(ev ->{
 			Workouts workoutsFrame = new Workouts(usuario);
 			workoutsFrame.setVisible(true);
 			dispose();
@@ -265,6 +208,170 @@ public class Ejercicio extends JFrame {
 		setLocationRelativeTo(null);
 	}
 
+	private void updateSeriesDisplay() {
+		seriesPanel.removeAll();
+		lblTiemposSeries.clear();
+		
+		if (ejercicios == null || ejercicios.isEmpty() || ejercicioActualIndex >= ejercicios.size()) {
+			JPanel panelVacio = new JPanel();
+			panelVacio.setBackground(new Color(250,250,250));
+			panelVacio.add(new JLabel("No hay ejercicios"));
+			seriesPanel.add(panelVacio);
+			seriesPanel.revalidate();
+			seriesPanel.repaint();
+			return;
+		}
+		
+		Modelo_Pojos.Ejercicio ej = ejercicios.get(ejercicioActualIndex);
+		lblNombreEjercicio.setText(ej.getNombre() != null ? ej.getNombre() : "Sin nombre");
+		lblDescripcionEjercicio.setText("<html><center>" + (ej.getDescripcion() != null ? ej.getDescripcion() : "") + "</center></html>");
+		lblProgresoEjercicios.setText("Ejercicio " + (ejercicioActualIndex + 1) + " de " + ejercicios.size());
+		
+		ArrayList<Serie> series = ej.getSeries();
+		if (series == null || series.isEmpty()) {
+			JPanel panelVacio = new JPanel();
+			panelVacio.setBackground(new Color(250,250,250));
+			panelVacio.add(new JLabel("No hay series para este ejercicio"));
+			seriesPanel.add(panelVacio);
+		} else {
+			for (int i = 0; i < series.size(); i++) {
+				Serie s = series.get(i);
+				JPanel panelSerie = new JPanel();
+				panelSerie.setLayout(new BoxLayout(panelSerie, BoxLayout.Y_AXIS));
+				panelSerie.setBackground(new Color(250, 250, 250));
+				panelSerie.setBorder(BorderFactory.createCompoundBorder(
+					BorderFactory.createLineBorder(new Color(220, 220, 220), 1),
+					new EmptyBorder(10, 10, 10, 10)
+				));
+				
+				JLabel lblNombre = new JLabel("Serie " + (i+1));
+				lblNombre.setFont(new Font("SansSerif", Font.BOLD, 16));
+				lblNombre.setForeground(colorPrimario);
+				lblNombre.setAlignmentX(Component.CENTER_ALIGNMENT);
+				panelSerie.add(lblNombre);
+				panelSerie.add(Box.createRigidArea(new Dimension(0,8)));
+				
+				int durSec = s.getTiempo();
+				JLabel lblTiempo = new JLabel(formatTime(durSec));
+				lblTiempo.setFont(new Font("SansSerif", Font.BOLD, 24));
+				lblTiempo.setForeground(colorTexto);
+				lblTiempo.setAlignmentX(Component.CENTER_ALIGNMENT);
+				panelSerie.add(lblTiempo);
+				
+				JLabel lblDesc = new JLabel("Descanso: " + formatTime(s.getDescanso()));
+				lblDesc.setFont(new Font("SansSerif", Font.PLAIN, 12));
+				lblDesc.setForeground(colorTexto);
+				lblDesc.setAlignmentX(Component.CENTER_ALIGNMENT);
+				panelSerie.add(lblDesc);
+				
+				// highlight current serie
+				if (i == serieActual) {
+					panelSerie.setBorder(BorderFactory.createCompoundBorder(
+						BorderFactory.createLineBorder(colorNaranja, 2),
+						new EmptyBorder(10, 10, 10, 10)
+					));
+				}
+				
+				seriesPanel.add(panelSerie);
+				lblTiemposSeries.add(lblTiempo);
+			}
+		}
+		seriesPanel.revalidate();
+		seriesPanel.repaint();
+	}
+	
+	private void onStartClicked() {
+		// start or toggle the timer
+		if (ejercicios == null || ejercicios.isEmpty()) return;
+		Modelo_Pojos.Ejercicio ej = ejercicios.get(ejercicioActualIndex);
+		ArrayList<Serie> series = ej.getSeries();
+		if (series == null || series.isEmpty()) return;
+		
+		if (timer == null) {
+			// initialize countdown with current serie time
+			remainingSeconds = series.get(serieActual).getTiempo();
+			inDescanso = false;
+			timer = new javax.swing.Timer(1000, ev -> timerTick());
+			timer.start();
+			btnIniciar.setText("Pausar");
+			lblEstadoActual.setText("Serie " + (serieActual+1) + " — En progreso");
+		} else if (timer.isRunning()) {
+			timer.stop();
+			btnIniciar.setText("Continuar");
+			lblEstadoActual.setText("Pausado");
+		} else {
+			timer.start();
+			btnIniciar.setText("Pausar");
+		}
+	}
+	
+	private void timerTick() {
+		// decrement remainingSeconds and update label
+		if (ejercicios == null || ejercicios.isEmpty()) return;
+		Modelo_Pojos.Ejercicio ej = ejercicios.get(ejercicioActualIndex);
+		ArrayList<Serie> series = ej.getSeries();
+		if (series == null || series.isEmpty()) return;
+		
+		if (remainingSeconds > 0) {
+			remainingSeconds--;
+			lblEstadoActual.setText((inDescanso ? "Descanso" : "Serie "+(serieActual+1)) + " — " + formatTime(remainingSeconds));
+		} else {
+			// finished current countdown
+			if (!inDescanso) {
+				// finished active serie, start descanso for this serie
+				int descanso = series.get(serieActual).getDescanso();
+				if (descanso > 0) {
+					inDescanso = true;
+					remainingSeconds = descanso;
+					lblEstadoActual.setText("Descanso — " + formatTime(remainingSeconds));
+				} else {
+					// no descanso, move to next serie immediately
+					advanceSerieOrExercise();
+				}
+			} else {
+				// finished descanso, move to next serie
+				inDescanso = false;
+				advanceSerieOrExercise();
+			}
+		}
+		// update the time label for the current serie if visible
+		if (!lblTiemposSeries.isEmpty() && serieActual < lblTiemposSeries.size()) {
+			// if inDescanso show remaining descanso in the serie label as well
+			lblTiemposSeries.get(serieActual).setText(formatTime(inDescanso ? remainingSeconds : Math.max(0, series.get(serieActual).getTiempo() - (series.get(serieActual).getTiempo() - remainingSeconds))));
+		}
+	}
+	
+	private void advanceSerieOrExercise() {
+		Modelo_Pojos.Ejercicio ej = ejercicios.get(ejercicioActualIndex);
+		ArrayList<Serie> series = ej.getSeries();
+		serieActual++;
+		if (serieActual >= series.size()) {
+			// finished this exercise, move to next exercise
+			ejercicioActualIndex++;
+			if (ejercicioActualIndex >= ejercicios.size()) {
+				// finished workout
+				timer.stop();
+				btnIniciar.setText("Iniciar");
+				lblEstadoActual.setText("Entrenamiento completado");
+				return;
+			} else {
+				// switch to next exercise
+				serieActual = 0;
+				updateSeriesDisplay();
+				ArrayList<Serie> nextSeries = ejercicios.get(ejercicioActualIndex).getSeries();
+				remainingSeconds = nextSeries.get(0).getTiempo();
+				lblEstadoActual.setText("Cambiando a siguiente ejercicio");
+				return;
+			}
+		} else {
+			// start next serie immediately
+			remainingSeconds = series.get(serieActual).getTiempo();
+			lblEstadoActual.setText("Serie " + (serieActual+1) + " — En progreso");
+			updateSeriesDisplay();
+		}
+		updateSeriesDisplay();
+	}
+	
 	private String formatTime(int segundos) {
 		int mins = segundos / 60;
 		int secs = segundos % 60;

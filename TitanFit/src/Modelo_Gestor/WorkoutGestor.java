@@ -2,6 +2,7 @@ package Modelo_Gestor;
 
 import Modelo_Pojos.Workout;
 import Modelo_Pojos.Ejercicio;
+import Modelo_Pojos.Serie;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.CollectionReference;
@@ -41,13 +42,23 @@ public class WorkoutGestor {
 					String ejNombre = ejDoc.getId();
 					String descripcion = ejDoc.getString("descripcion");
 					String foto = ejDoc.getString("foto");
-					Long tiempoMs = ejDoc.getLong("tiempo");
-					int duracionSeg = 0;
-					if (tiempoMs != null) {
-						duracionSeg = (int) (tiempoMs / 1000L);
+
+					// Create the list once per ejercicio and add all series into it
+					ArrayList<Serie> series = new ArrayList<>();
+					for (QueryDocumentSnapshot serieDoc : ejDoc.getReference().collection("Series").get().get()
+							.getDocuments()) {
+						try {
+							int serieId = Integer.parseInt(serieDoc.getId());
+							Long descansoLong = serieDoc.getLong("descanso");
+							Long tiempoLong = serieDoc.getLong("tiempo");
+							int descanso = (descansoLong == null) ? 0 : descansoLong.intValue() / 1000;
+							int tiempo = (tiempoLong == null) ? 0 : tiempoLong.intValue() / 1000;
+							series.add(new Serie(serieId, descanso, tiempo));
+						} catch (Exception ignore) {
+						}
 					}
 
-					ejercicios.add(new Ejercicio(ejNombre, descripcion, foto, duracionSeg));
+					ejercicios.add(new Ejercicio(ejNombre, descripcion, foto, series));
 				}
 				w.setEjercicios(new ArrayList<Ejercicio>(ejercicios));
 

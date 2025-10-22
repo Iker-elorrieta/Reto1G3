@@ -1,28 +1,29 @@
 package Modelo_Pojos;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public class Ejercicio implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String nombre;
 	private String descripcion;
 	private String foto;
-	private int duracion;
-
-	public Ejercicio(String nombre, String descripcion, String imagen, int duracion) {
+	private ArrayList<Serie> series;
+	
+	public Ejercicio(String nombre, String descripcion, String foto,  ArrayList<Serie> series) {
 		super();
 		this.nombre = nombre;
 		this.descripcion = descripcion;
-		this.foto = imagen;
-		this.duracion = duracion;
+		this.foto = foto;
+		this.series = series;
 	}
-
+	
 	public Ejercicio() {
 		super();
 		this.nombre = null;
 		this.descripcion = null;
 		this.foto = null;
-		this.duracion = 0;
+		this.series = new ArrayList<>();
 	}
 
 	public String getNombre() {
@@ -49,12 +50,20 @@ public class Ejercicio implements Serializable {
 		this.foto = foto;
 	}
 
-	public int getDuracion() {
-		return duracion;
+	public ArrayList<Serie> getSeries() {
+		if (this.series == null) this.series = new ArrayList<>();
+		return series;
 	}
 
-	public void setDuracion(int duracion) {
-		this.duracion = duracion;
+	public void setSeries(ArrayList<Serie> series) {
+		this.series = series;
 	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+	
+
+	
 
 }
