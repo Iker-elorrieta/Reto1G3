@@ -138,31 +138,32 @@ public class MiUsuario extends JFrame {
 			txtFecha.setText(sdf.format(usuario.getFechaNacimiento()));
 		}
 		form.add(txtFecha, gbcTxtFecha);
-
-		// Separator space before password
-		GridBagConstraints gbcSep = new GridBagConstraints();
-		gbcSep.insets = baseInsets;
-		gbcSep.gridx = 0; gbcSep.gridy = 4; gbcSep.gridwidth = 2; gbcSep.fill = GridBagConstraints.HORIZONTAL;
-		form.add(new JLabel(""), gbcSep);
-
-		// Nueva contraseña (label)
-		GridBagConstraints gbcLblNewPass = new GridBagConstraints();
-		gbcLblNewPass.insets = baseInsets;
-		gbcLblNewPass.anchor = GridBagConstraints.WEST;
-		gbcLblNewPass.gridx = 0; gbcLblNewPass.gridy = 5;
-		JLabel lblNewPass = new JLabel("Nueva contraseña (opcional):");
-		lblNewPass.setFont(labelFont);
-		form.add(lblNewPass, gbcLblNewPass);
+		
+				// Nueva contraseña (label)
+				GridBagConstraints gbcLblNewPass = new GridBagConstraints();
+				gbcLblNewPass.insets = baseInsets;
+				gbcLblNewPass.anchor = GridBagConstraints.WEST;
+				gbcLblNewPass.gridx = 0; 
+				gbcLblNewPass.gridy = 4;
+				JLabel lblNewPass = new JLabel("Nueva contraseña (opcional):");
+				lblNewPass.setFont(labelFont);
+				form.add(lblNewPass, gbcLblNewPass);
 
 		// Nueva contraseña (field)
 		GridBagConstraints gbcTxtNewPass = new GridBagConstraints();
 		gbcTxtNewPass.insets = baseInsets;
 		gbcTxtNewPass.anchor = GridBagConstraints.WEST;
-		gbcTxtNewPass.gridx = 1; gbcTxtNewPass.gridy = 5;
+		gbcTxtNewPass.gridx = 1; gbcTxtNewPass.gridy = 4;
 		gbcTxtNewPass.weightx = 1; gbcTxtNewPass.fill = GridBagConstraints.HORIZONTAL;
 		final JPasswordField txtNewPass = new JPasswordField();
-		txtNewPass.setColumns(20);
+		txtNewPass.setColumns(28);
 		form.add(txtNewPass, gbcTxtNewPass);
+
+		// Separator space before password
+		GridBagConstraints gbcSep = new GridBagConstraints();
+		gbcSep.insets = baseInsets;
+		gbcSep.gridx = 0; gbcSep.gridy = 5; gbcSep.gridwidth = 2; gbcSep.fill = GridBagConstraints.HORIZONTAL;
+		form.add(new JLabel(""), gbcSep);
 
 		contentPane.add(form, BorderLayout.CENTER);
 
@@ -199,7 +200,7 @@ public class MiUsuario extends JFrame {
 			String nuevosApellidos = txtApellidos.getText().trim();
 			String nuevoEmail = txtEmail.getText().trim();
 			String fechaStr = txtFecha.getText().trim();
-			String nuevoPass = new String(txtNewPass.getPassword());
+			String nuevoPass = txtNewPass.getText().trim();
 
 			if (nuevoNombre.isEmpty()) {
 				JOptionPane.showMessageDialog(MiUsuario.this, "El nombre no puede estar vacío.", "Error",
@@ -233,6 +234,9 @@ public class MiUsuario extends JFrame {
 				usuario.setEmail(nuevoEmail);
 				if (nuevaFecha != null)
 					usuario.setFechaNacimiento(nuevaFecha);
+				if (!nuevoPass.isEmpty()) {
+					usuario.setPassword(nuevoPass);
+				}
 			}
 
 			// Call controller to persist changes (delegates to gestor)
@@ -240,6 +244,9 @@ public class MiUsuario extends JFrame {
 			if (ok) {
 				JOptionPane.showMessageDialog(MiUsuario.this, "Perfil actualizado correctamente.", "Éxito",
 					JOptionPane.INFORMATION_MESSAGE);
+				// Open Workouts window with updated user object
+				Workouts main = new Workouts(usuario);
+				main.setVisible(true);
 				MiUsuario.this.dispose();
 			} else {
 				JOptionPane.showMessageDialog(MiUsuario.this, "No se pudo actualizar el perfil. Compruebe la conexión.",

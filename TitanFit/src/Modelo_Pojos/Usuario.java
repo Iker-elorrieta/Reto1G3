@@ -1,10 +1,11 @@
 package Modelo_Pojos;
 
+import java.io.Serializable;
 import java.util.Date;
 import org.mindrot.jbcrypt.BCrypt;
 
-public class Usuario {
-
+public class Usuario implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private int id;
 	private String nombre;
 	private String apellidos;

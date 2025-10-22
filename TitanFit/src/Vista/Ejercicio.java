@@ -119,7 +119,6 @@ public class Ejercicio extends JFrame {
 		
 		topPanel.add(infoPanel, BorderLayout.CENTER);
 		
-		// Panel central - Información del ejercicio actual
 		JPanel centralPanel = new JPanel(new BorderLayout(10, 10));
 		centralPanel.setBackground(Color.WHITE);
 		centralPanel.setBorder(BorderFactory.createCompoundBorder(

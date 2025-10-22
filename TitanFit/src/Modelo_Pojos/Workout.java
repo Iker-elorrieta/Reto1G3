@@ -1,10 +1,11 @@
 package Modelo_Pojos;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Workout {
-
+public class Workout implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private int nivel;
 	private String nombre;
 	private int numeroEjercicios;
@@ -24,7 +25,7 @@ public class Workout {
 		this.nivel = 0;
 		this.nombre = null;
 		this.numeroEjercicios = 0;
-		this.ejercicios = null;
+		this.ejercicios = new ArrayList<>(); // FIXED
 		this.video = null;
 	}
 

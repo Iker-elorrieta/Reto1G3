@@ -1,7 +1,9 @@
 package Modelo_Pojos;
 
-public class Ejercicio {
+import java.io.Serializable;
 
+public class Ejercicio implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private String nombre;
 	private String descripcion;
 	private String foto;

@@ -11,7 +11,7 @@ import com.google.cloud.firestore.WriteResult;
 import com.google.cloud.firestore.SetOptions;
 import com.google.firebase.cloud.FirestoreClient;
 
-import Modelo_Pojos.Firebase;
+import Controlador.FirebaseControlador;
 import Modelo_Pojos.Usuario;
 
 import java.util.HashMap;
@@ -22,8 +22,7 @@ public class LoginGestor {
 	public static Usuario loginUsuario(String email, String password) {
 		try {
 			try {
-				new Firebase();
-				Firebase.inicializarFirebase();
+				FirebaseControlador.inicializarFirebase();
 			} catch (Throwable t) {
 			}
 
@@ -75,8 +74,7 @@ public class LoginGestor {
 	public static boolean registrarUsuario(Usuario usuario, String passwordSinHash) {
 		try {
 			try {
-				new Firebase();
-				Firebase.inicializarFirebase();
+				FirebaseControlador.inicializarFirebase();
 			} catch (Throwable t) {
 			}
 
@@ -89,7 +87,7 @@ public class LoginGestor {
 			data.put("nombre", usuario.getNombre());
 			data.put("apellidos", usuario.getApellidos());
 			data.put("fechaNacimiento", usuario.getFechaNacimiento());
-			data.put("password", usuario.getPassword());
+			data.put("contraseña", usuario.getPassword());
 			data.put("nivel", usuario.getNivel());
 			data.put("esTrainer",false);
 
@@ -104,7 +102,7 @@ public class LoginGestor {
 
 	public static boolean actualizarUsuario(String originalEmail, Usuario usuario, String nuevaPasswordPlain) {
 		try {
-			try { new Firebase(); Firebase.inicializarFirebase(); } catch (Throwable t) {}
+			try {  FirebaseControlador.inicializarFirebase(); } catch (Throwable t) {}
 
 			Firestore db = FirestoreClient.getFirestore();
 
