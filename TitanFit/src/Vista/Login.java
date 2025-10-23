@@ -4,7 +4,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
-import Controlador.BackupControlador;
+import Backup.Backup;
 import Modelo_Pojos.Usuario;
 
 import javax.swing.JLabel;
@@ -25,6 +25,8 @@ import java.beans.Beans;
 import javax.imageio.ImageIO;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+
+
 
 public class Login extends JFrame {
 
@@ -78,9 +80,16 @@ public class Login extends JFrame {
 
 				Usuario user = Controlador.LoginControlador.loginUsuario(textFieldLoginUsuario.getText(), password);
 				if (user != null) {
-					BackupControlador.realizarBackup();
+
+					
+					Backup backup = new Backup();
+					backup.crearProceso();
+
+					
+					
 					JFrame workouts = new Workouts(user);
 					workouts.setVisible(true);
+					dispose();
 				} else {
 					// Failed login: show alert
 					JOptionPane.showMessageDialog(Login.this, "Usuario o contraseña incorrectos.", "Login",

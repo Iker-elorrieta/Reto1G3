@@ -1,19 +1,11 @@
-package Modelo_Gestor;
+package Backup;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.OutputKeys;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
@@ -21,10 +13,6 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 
 import Controlador.FirebaseControlador;
 import Modelo_Pojos.Ejercicio;
@@ -32,7 +20,7 @@ import Modelo_Pojos.Serie;
 import Modelo_Pojos.Usuario;
 import Modelo_Pojos.Workout;
 
-public class BackupGestor implements Serializable {
+public class BackupProceso {
 
 	static List<Usuario> listaUsuarios = new ArrayList<>();
 	static List<Workout> listaWorkouts = new ArrayList<>();
@@ -142,28 +130,31 @@ public class BackupGestor implements Serializable {
 		}
 	}
 
-	public static void realizarBackup() {
-		try {
-			FirebaseControlador.inicializarFirebase();
-			Thread hilousuario = new Thread(() -> recogerUsuarios());
-			Thread hiloworkout = new Thread(() -> recogerWorkouts());
-			hilousuario.start();
-			hiloworkout.start();
-			hilousuario.join();
-			hiloworkout.join();
+	public static void main(String[] args) {
+	    try {
+	        FirebaseControlador.inicializarFirebase();
+	        Thread hilousuario = new Thread(() -> recogerUsuarios());
+	        Thread hiloworkout = new Thread(() -> recogerWorkouts());
+	        hilousuario.start();
+	        hiloworkout.start();
+	        hilousuario.join();
+	        hiloworkout.join();
 
-			FileOutputStream fos = new FileOutputStream("backup.dat");
-			ObjectOutputStream oos = new ObjectOutputStream(fos);
+	        File file = new File(System.getProperty("user.dir"), "backup.dat");
 
-			oos.writeObject(listaUsuarios);
-			oos.writeObject(listaWorkouts);
+	        FileOutputStream fos = new FileOutputStream(file);
+	        ObjectOutputStream oos = new ObjectOutputStream(fos);
 
-			oos.close();
-			fos.close();
+	        oos.writeObject(listaUsuarios);
+	        oos.writeObject(listaWorkouts);
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	        oos.close();
+	        fos.close();
+
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
 	}
 
 }
