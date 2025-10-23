@@ -72,33 +72,43 @@ public class LoginGestor {
 	}
 
 	public static boolean registrarUsuario(Usuario usuario, String passwordSinHash) {
-		try {
-			try {
-				FirebaseControlador.inicializarFirebase();
-			} catch (Throwable t) {
-			}
+	    try {
+	        try {
+	            FirebaseControlador.inicializarFirebase();
+	        } catch (Throwable t) {
+	        }
 
-			Firestore db = FirestoreClient.getFirestore();
-			DocumentReference docRef = db.collection("Usuarios").document(usuario.getEmail());
-			String hashedPassword = Usuario.setPasswordConHash(passwordSinHash);
-			usuario.setPassword(hashedPassword);
+	        Firestore db = FirestoreClient.getFirestore();
+	        DocumentReference docRef = db.collection("Usuarios").document(usuario.getEmail());
 
-			Map<String, Object> data = new HashMap<>();
-			data.put("nombre", usuario.getNombre());
-			data.put("apellidos", usuario.getApellidos());
-			data.put("fechaNacimiento", usuario.getFechaNacimiento());
-			data.put("contraseña", usuario.getPassword());
-			data.put("nivel", usuario.getNivel());
-			data.put("esTrainer",false);
+	       
+	        ApiFuture<DocumentSnapshot> future = docRef.get();
+	        DocumentSnapshot document = future.get();
+	        if (document.exists()) {
+	          
+	            return false;
+	        }
 
-			ApiFuture<WriteResult> result = docRef.set(data);
-			result.get();
-			return true;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		}
+	        String hashedPassword = Usuario.setPasswordConHash(passwordSinHash);
+	        usuario.setPassword(hashedPassword);
+
+	        Map<String, Object> data = new HashMap<>();
+	        data.put("nombre", usuario.getNombre());
+	        data.put("apellidos", usuario.getApellidos());
+	        data.put("fechaNacimiento", usuario.getFechaNacimiento());
+	        data.put("contraseña", usuario.getPassword());
+	        data.put("nivel", usuario.getNivel());
+	        data.put("esTrainer", false);
+
+	        ApiFuture<WriteResult> result = docRef.set(data);
+	        result.get();
+	        return true;
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return false;
+	    }
 	}
+
 
 	public static boolean actualizarUsuario(String originalEmail, Usuario usuario, String nuevaPasswordPlain) {
 		try {

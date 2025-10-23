@@ -62,8 +62,19 @@ public class Ejercicio implements Serializable {
 	public static long getSerialversionuid() {
 		return serialVersionUID;
 	}
-	
 
 	
+	public int getDuracion() {
+	    if (series != null && !series.isEmpty()) {
+	        return series.get(0).getTiempo(); 
+	    }
+	    return 0;
+	}
 
+	public int getDescanso() {
+	    if (series != null && !series.isEmpty()) {
+	        return series.get(0).getDescanso(); 
+	    }
+	    return 60; 
+	}
 }
