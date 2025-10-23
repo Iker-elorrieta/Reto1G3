@@ -102,7 +102,11 @@ public class Workouts extends JFrame {
 		});
 		
 
-		btnHistorial.addActionListener(e -> JOptionPane.showMessageDialog(Workouts.this, "Historial no implementado.", "Info", JOptionPane.INFORMATION_MESSAGE));
+		btnHistorial.addActionListener(e -> {
+			Historial historial = new Historial(usuario);
+			historial.setVisible(true);
+			Workouts.this.dispose();
+		});
 
 		topRight.add(btnHistorial);
 		topRight.add(btnMiPerfil);
