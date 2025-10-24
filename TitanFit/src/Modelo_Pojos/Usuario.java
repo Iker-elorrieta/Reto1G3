@@ -1,6 +1,8 @@
 package Modelo_Pojos;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -13,20 +15,22 @@ public class Usuario implements Serializable {
 	private Date fechaNacimiento;
 	private String password;
 	private int nivel;
+	private ArrayList<Historico> historico;
 
 	public Usuario() {
 		super();
 		this.id = 0;
-		this.nombre = null;
-		this.apellidos = null;
-		this.email = null;
+		this.nombre = "";
+		this.apellidos = "";
+		this.email = "";
 		this.fechaNacimiento = null;
-		this.password = null;
+		this.password = "";
 		this.nivel = 0;
+		this.historico = new ArrayList<Historico>();
 	}
 
 	public Usuario(int id, String nombre, String apellidos, String email, Date fechaNacimiento, String password,
-			int nivel) {
+			int nivel, ArrayList<Historico> historico) {
 		super();
 		this.id = id;
 		this.nombre = nombre;
@@ -35,6 +39,15 @@ public class Usuario implements Serializable {
 		this.fechaNacimiento = fechaNacimiento;
 		this.password = password;
 		this.nivel = nivel;
+		this.historico = historico;
+	}
+
+	public ArrayList<Historico> getHistorico() {
+		return historico;
+	}
+
+	public void setHistorico(ArrayList<Historico> historico) {
+		this.historico = historico;
 	}
 
 	public int getId() {
@@ -92,6 +105,8 @@ public class Usuario implements Serializable {
 	public void setNivel(int nivel) {
 		this.nivel = nivel;
 	}
+
+	
 
 	public static String setPasswordConHash(String passwordPlano) {
 		String salt = BCrypt.gensalt(12);

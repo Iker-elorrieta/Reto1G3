@@ -3,12 +3,25 @@ package Backup;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
@@ -16,6 +29,7 @@ import com.google.firebase.cloud.FirestoreClient;
 
 import Controlador.FirebaseControlador;
 import Modelo_Pojos.Ejercicio;
+import Modelo_Pojos.Historico;
 import Modelo_Pojos.Serie;
 import Modelo_Pojos.Usuario;
 import Modelo_Pojos.Workout;
@@ -24,6 +38,7 @@ public class BackupProceso {
 
 	static List<Usuario> listaUsuarios = new ArrayList<>();
 	static List<Workout> listaWorkouts = new ArrayList<>();
+	static List<Historico> listaHistorico = new ArrayList<>();
 
 	public static void recogerUsuarios() {
 		Firestore db = FirestoreClient.getFirestore();
@@ -50,7 +65,7 @@ public class BackupProceso {
 						usuario.setFechaNacimiento((Date) fechaObj);
 					} else if (fechaObj instanceof String) {
 						try {
-							java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+							SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 							usuario.setFechaNacimiento(sdf.parse((String) fechaObj));
 						} catch (Exception ex) {
 							usuario.setFechaNacimiento(null);
@@ -59,6 +74,45 @@ public class BackupProceso {
 						usuario.setFechaNacimiento(null);
 					}
 				}
+
+				// --- Recoger historicos para este usuario ---
+				try {
+					ApiFuture<QuerySnapshot> historicosFuture = document.getReference().collection("Historico").get();
+					List<QueryDocumentSnapshot> historicosDocs = historicosFuture.get().getDocuments();
+					ArrayList<Historico> historicosList = new ArrayList<>();
+
+					for (QueryDocumentSnapshot hDoc : historicosDocs) {
+						Historico h = new Historico();
+						h.setPorcentaje(hDoc.getLong("porcentaje").intValue());
+						h.setTiempo(hDoc.getLong("tiempo").intValue());
+						h.setFecha(hDoc.getDate("fecha"));
+
+						Object refObj = hDoc.get("id_workout");
+						int id_workout = 0;
+						if (refObj instanceof DocumentReference) {
+							DocumentReference ref = (DocumentReference) refObj;
+							try {
+								id_workout = Integer.parseInt(ref.getId());
+							} catch (NumberFormatException e) {
+								id_workout = 0;
+							}
+						} else if (refObj != null) {
+							try {
+								id_workout = Integer.parseInt(refObj.toString());
+							} catch (NumberFormatException e) {
+								id_workout = 0;
+							}
+						}
+						h.setId_workout(id_workout);
+
+						historicosList.add(h);
+					}
+
+					usuario.setHistorico(historicosList);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
 				listaUsuarios.add(usuario);
 			}
 
@@ -130,31 +184,95 @@ public class BackupProceso {
 		}
 	}
 
+	public static void historicoXML() {
+		try {
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.newDocument();
+
+			Element rootElement = doc.createElement("Historicos");
+			doc.appendChild(rootElement);
+
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+			for (Usuario usuario : listaUsuarios) {
+				if (usuario.getHistorico() != null && !usuario.getHistorico().isEmpty()) {
+					for (Historico h : usuario.getHistorico()) {
+						Element historicoElem = doc.createElement("Historico");
+
+						Element userId = doc.createElement("UsuarioEmail");
+						userId.appendChild(doc.createTextNode(String.valueOf(usuario.getEmail())));
+						historicoElem.appendChild(userId);
+
+						Element workoutIdElem = doc.createElement("WorkoutId");
+						workoutIdElem.appendChild(doc.createTextNode(String.valueOf(h.getId_workout())));
+						historicoElem.appendChild(workoutIdElem);
+
+						Element porcentajeElem = doc.createElement("Porcentaje");
+						porcentajeElem.appendChild(doc.createTextNode(String.valueOf(h.getPorcentaje())));
+						historicoElem.appendChild(porcentajeElem);
+
+						Element tiempoElem = doc.createElement("Tiempo");
+						tiempoElem.appendChild(doc.createTextNode(String.valueOf(h.getTiempo())));
+						historicoElem.appendChild(tiempoElem);
+
+						Element fechaElem = doc.createElement("Fecha");
+						if (h.getFecha() != null) {
+							fechaElem.appendChild(doc.createTextNode(sdf.format(h.getFecha())));
+						} else {
+							fechaElem.appendChild(doc.createTextNode(""));
+						}
+						historicoElem.appendChild(fechaElem);
+
+						rootElement.appendChild(historicoElem);
+					}
+				}
+			}
+
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			DOMSource source = new DOMSource(doc);
+			StreamResult result = new StreamResult(new File("historicos.xml"));
+			transformer.transform(source, result);
+
+			System.out.println("XML generado correctamente.");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static void main(String[] args) {
-	    try {
-	        FirebaseControlador.inicializarFirebase();
-	        Thread hilousuario = new Thread(() -> recogerUsuarios());
-	        Thread hiloworkout = new Thread(() -> recogerWorkouts());
-	        hilousuario.start();
-	        hiloworkout.start();
-	        hilousuario.join();
-	        hiloworkout.join();
+		try {
+			FirebaseControlador.inicializarFirebase();
+			Thread hilousuario = new Thread(() -> recogerUsuarios());
+			Thread hiloworkout = new Thread(() -> recogerWorkouts());
 
-	        File file = new File(System.getProperty("user.dir"), "backup.dat");
+			hilousuario.start();
+			hiloworkout.start();
 
-	        FileOutputStream fos = new FileOutputStream(file);
-	        ObjectOutputStream oos = new ObjectOutputStream(fos);
+			hilousuario.join();
+			hiloworkout.join();
 
-	        oos.writeObject(listaUsuarios);
-	        oos.writeObject(listaWorkouts);
+			Thread hilohistorico = new Thread(() -> historicoXML());
+			hilohistorico.start();
+			hilohistorico.join();
 
-	        oos.close();
-	        fos.close();
+			File file = new File(System.getProperty("user.dir"), "backup.dat");
 
+			FileOutputStream fos = new FileOutputStream(file);
+			ObjectOutputStream oos = new ObjectOutputStream(fos);
 
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
+			oos.writeObject(listaUsuarios);
+			oos.writeObject(listaWorkouts);
+
+			oos.close();
+			fos.close();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }

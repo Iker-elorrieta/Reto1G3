@@ -9,9 +9,8 @@ public class Backup {
 		try {
 			ProcessBuilder pb = new ProcessBuilder(
 				    "java",
-				    "-cp",
-				    "target/classes",       
-				    "Backup.BackupProceso" 
+				    "-jar",
+				    "Recursos/TitanfitBackup.jar" 
 				);
 				pb.inheritIO(); 
 				pb.start();

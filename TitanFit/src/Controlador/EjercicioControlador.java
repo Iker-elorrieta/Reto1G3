@@ -11,7 +11,7 @@ public class EjercicioControlador {
     private EjercicioGestor gestor;
 
     public EjercicioControlador(Ejercicio vista, java.util.ArrayList<Modelo_Pojos.Ejercicio> ejercicios) {
-        this.vista = vista;
+        this.setVista(vista);
         this.gestor = new EjercicioGestor(ejercicios);
         this.gestor.setListener(new EjercicioGestor.Listener() {
             @Override
@@ -48,4 +48,12 @@ public class EjercicioControlador {
     public boolean isRunning() {
         return gestor.isRunning();
     }
+
+	public Ejercicio getVista() {
+		return vista;
+	}
+
+	public void setVista(Ejercicio vista) {
+		this.vista = vista;
+	}
 }
