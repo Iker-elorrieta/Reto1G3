@@ -2,3 +2,5 @@
 /target/
 serviceAccount.json
 
+backup.dat
+historicos.xml
