@@ -17,8 +17,7 @@ public class Ejercicio extends JFrame {
 	private JPanel contentPane;
 	
 	// Datos del workout
-	private Workout workout;
-	private Usuario usuario;
+	
 	private ArrayList<Modelo_Pojos.Ejercicio> ejercicios;
 	private int ejercicioActualIndex = 0;
 	private int serieActual = 0;
@@ -40,20 +39,15 @@ public class Ejercicio extends JFrame {
     private Color colorFondo = new Color(245, 245, 239);
     private Color colorPrimario = new Color(33, 150, 243);
     private Color colorVerde = new Color(76, 175, 80);
-    private Color colorNaranja = new Color(255, 152, 0);
     private Color colorRojo = new Color(244, 67, 54);
     private Color colorTexto = new Color(60, 60, 60);
     private Color colorAmarillo = new Color(255, 204, 0);
 
-    // Controller (MVC)
     private EjercicioControlador controlador;
 
-	/**
-	 * Constructor - Crea la interfaz visual
-	 */
+
 	public Ejercicio(Workout workout, Usuario usuario) {
-		this.workout = workout;
-		this.usuario = usuario;
+	
 		this.ejercicios = workout.getEjercicios();
 
 		setTitle("TitanFit — Entrenamiento en Progreso");

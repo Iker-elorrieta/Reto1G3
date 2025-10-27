@@ -1,7 +1,6 @@
 package Vista;
 
 import Controlador.FirebaseControlador;
-import Modelo_Pojos.Firebase;
 
 public class Main {
 

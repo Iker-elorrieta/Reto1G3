@@ -5,6 +5,7 @@ import java.util.Date;
 
 public class Historico implements Serializable  {
 
+	private static final long serialVersionUID = 1L;
 	private int id_workout;
 	private Date fecha;
 	private int tiempo;
