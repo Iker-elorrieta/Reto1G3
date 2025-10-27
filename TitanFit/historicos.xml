@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Historicos>
+    <Historico>
+        <UsuarioEmail>a@a.com</UsuarioEmail>
+        <WorkoutId>2</WorkoutId>
+        <Porcentaje>8</Porcentaje>
+        <Tiempo>20000</Tiempo>
+        <Fecha>2025-10-16</Fecha>
+    </Historico>
+    <Historico>
+        <UsuarioEmail>p@p.com</UsuarioEmail>
+        <WorkoutId>1</WorkoutId>
+        <Porcentaje>100</Porcentaje>
+        <Tiempo>600000</Tiempo>
+        <Fecha>2025-10-23</Fecha>
+    </Historico>
+</Historicos>
