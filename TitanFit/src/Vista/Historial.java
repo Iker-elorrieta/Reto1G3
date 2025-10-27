@@ -24,11 +24,10 @@ public class Historial extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
-	private Usuario usuario;
+	
     private JTable table;
 
 	public Historial(Usuario usuario) {
-		this.usuario = usuario;
 		setTitle("TitanFit — Historial");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);

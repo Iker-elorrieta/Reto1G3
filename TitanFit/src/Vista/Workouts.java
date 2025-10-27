@@ -138,6 +138,9 @@ public class Workouts extends JFrame {
 
 		String[] columnNames = { "Nombre", "# Ejercicios", "Nivel", "Video" };
 		model = new DefaultTableModel(columnNames, 0) {
+		
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return column == 3; 
@@ -182,6 +185,9 @@ public class Workouts extends JFrame {
 
 		String[] columnNamesEjercicios = { "#", "Nombre", "Descripción" };
 		modelEjercicios = new DefaultTableModel(columnNamesEjercicios, 0) {
+			
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;

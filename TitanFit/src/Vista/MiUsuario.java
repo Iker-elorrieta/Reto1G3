@@ -200,7 +200,9 @@ public class MiUsuario extends JFrame {
 			String nuevosApellidos = txtApellidos.getText().trim();
 			String nuevoEmail = txtEmail.getText().trim();
 			String fechaStr = txtFecha.getText().trim();
-			String nuevoPass = txtNewPass.getText().trim();
+			char[] passChars = txtNewPass.getPassword();
+			
+			String nuevoPass = new String(passChars).trim();
 
 			if (nuevoNombre.isEmpty()) {
 				JOptionPane.showMessageDialog(MiUsuario.this, "El nombre no puede estar vacío.", "Error",
