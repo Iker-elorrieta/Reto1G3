@@ -243,7 +243,7 @@ public class BackupProceso {
 		}
 	}
 
-	public static void main(String[] args) {
+	public void run() {
 		try {
 			FirebaseControlador.inicializarFirebase();
 			Thread hilousuario = new Thread(() -> recogerUsuarios());

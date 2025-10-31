@@ -18,6 +18,10 @@ import java.awt.FlowLayout;
 import java.awt.Dimension;
 import java.awt.Color;
 
+import Controlador.HistoricoControlador;
+import Modelo_Pojos.HistoricoDetalle;
+import java.util.List;
+import java.text.SimpleDateFormat;
 
 
 public class Historial extends JFrame {
@@ -79,6 +83,24 @@ public class Historial extends JFrame {
         
         table = new JTable(model);
 
+        // Load historico for user and populate table
+        try {
+            String userEmail = (usuario != null) ? usuario.getEmail() : "";
+            List<HistoricoDetalle> historicos = HistoricoControlador.obtenerHistoricoUsuario(userEmail);
+            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+            if (historicos != null) {
+                for (HistoricoDetalle h : historicos) {
+                    String fechaStr = (h.getFecha() != null) ? df.format(h.getFecha()) : "";
+                    String tiempoTotalStr = formatMillis(h.getTiempoTotal());
+                    String tiempoPrevistoStr = formatMillis(h.getTiempoPrevisto());
+                    String porcentajeStr = h.getPorcentaje() + "%";
+                    model.addRow(new Object[] { h.getNombreWorkout(), h.getNivel(), tiempoTotalStr, tiempoPrevistoStr, fechaStr, porcentajeStr });
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
        
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBounds(35, 73, 566, 327);
@@ -111,9 +133,13 @@ public class Historial extends JFrame {
 		
 	}
 
-	
+	private static String formatMillis(long ms) {
+	    long seconds = ms / 1000;
+	    long mins = seconds / 60;
+	    long secs = seconds % 60;
+	    return mins + ":" + (secs < 10 ? "0" + secs : secs);
+	}
 
 
-	
 
 }
