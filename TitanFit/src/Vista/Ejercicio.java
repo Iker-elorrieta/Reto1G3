@@ -10,6 +10,7 @@ import Modelo_Pojos.Usuario;
 import Modelo_Pojos.Workout;
 import Modelo_Pojos.Serie;
 import Controlador.EjercicioControlador;
+import Controlador.WorkoutControlador;
 
 public class Ejercicio extends JFrame {
 
@@ -21,6 +22,8 @@ public class Ejercicio extends JFrame {
 	private ArrayList<Modelo_Pojos.Ejercicio> ejercicios;
 	private int ejercicioActualIndex = 0;
 	private int serieActual = 0;
+    private Workout workout;
+    private Usuario usuario;
 	
 	// Componentes de interfaz
 	private JLabel lblCronometroWorkout;
@@ -49,6 +52,8 @@ public class Ejercicio extends JFrame {
 	public Ejercicio(Workout workout, Usuario usuario) {
 	
 		this.ejercicios = workout.getEjercicios();
+        this.workout = workout;
+        this.usuario = usuario;
 
 		setTitle("TitanFit — Entrenamiento en Progreso");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -202,6 +207,38 @@ public class Ejercicio extends JFrame {
 		btnSalir.setBorder(BorderFactory.createLineBorder(colorRojo, 2));
 		btnSalir.setPreferredSize(new Dimension(180, 40));
 		btnSalir.addActionListener(ev ->{
+			// Calculate percentage based on completed exercises and send historico before returning
+			new SwingWorker<Boolean, Void>() {
+				@Override
+				protected Boolean doInBackground() throws Exception {
+					try {
+						int porcentaje = controlador.getCompletedPercentage();
+						int tiempoSegundos = controlador.getTotalActiveSeconds();
+						long tiempoMillis = (long) tiempoSegundos * 1000L;
+						String workoutId = (workout != null && workout.getId() != null) ? workout.getId() : String.valueOf(workout.getNivel());
+						// On cancel, do not increment user level
+						return WorkoutControlador.registrarHistorico(usuario.getEmail(), workoutId, porcentaje, tiempoMillis, false);
+					} catch (Exception e) {
+						e.printStackTrace();
+						return false;
+					}
+				}
+
+				@Override
+				protected void done() {
+					try {
+						boolean ok = get();
+						if (!ok) {
+							// optional: log or inform the user in the workouts view
+							System.err.println("No se pudo guardar historico al cancelar workout.");
+						}
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+			}.execute();
+
+			// return to workouts immediately
 			Workouts workoutsFrame = new Workouts(usuario);
 			workoutsFrame.setVisible(true);
 			dispose();
@@ -362,5 +399,39 @@ public class Ejercicio extends JFrame {
 			btnIniciar.setText("Iniciar");
 			lblEstadoActual.setText("Entrenamiento completado");
 		});
+
+		// Persist historico in background
+		new SwingWorker<Boolean, Void>() {
+			@Override
+			protected Boolean doInBackground() throws Exception {
+				try {
+					int porcentaje = controlador.getCompletedPercentage();
+					int tiempoSegundos = controlador.getTotalActiveSeconds();
+					long tiempoMillis = (long) tiempoSegundos * 1000L;
+					String workoutId = (workout != null && workout.getId() != null) ? workout.getId() : String.valueOf(workout.getNivel());
+					// On natural completion, increment user level
+					return WorkoutControlador.registrarHistorico(usuario.getEmail(), workoutId, porcentaje, tiempoMillis, true);
+				} catch (Exception e) {
+					e.printStackTrace();
+					return false;
+				}
+			}
+
+			@Override
+			protected void done() {
+				try {
+					boolean ok = get();
+					if (ok) {
+						// update local usuario nivel for UI consistency
+						if (usuario != null) usuario.setNivel(usuario.getNivel() + 1);
+						JOptionPane.showMessageDialog(Ejercicio.this, "Historico guardado y nivel actualizado.", "OK", JOptionPane.INFORMATION_MESSAGE);
+					} else {
+						JOptionPane.showMessageDialog(Ejercicio.this, "No se pudo guardar el historico.", "Error", JOptionPane.ERROR_MESSAGE);
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		}.execute();
 	}
 }

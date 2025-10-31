@@ -49,11 +49,20 @@ public class EjercicioControlador {
         return gestor.isRunning();
     }
 
-	public Ejercicio getVista() {
-		return vista;
-	}
+    public Ejercicio getVista() {
+        return vista;
+    }
 
-	public void setVista(Ejercicio vista) {
-		this.vista = vista;
-	}
+    public void setVista(Ejercicio vista) {
+        this.vista = vista;
+    }
+
+    // Expose progress and time for persistence
+    public int getCompletedPercentage() {
+        return gestor.getCompletedExercisesPercentage();
+    }
+
+    public int getTotalActiveSeconds() {
+        return gestor.getTotalActiveSeconds();
+    }
 }

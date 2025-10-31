@@ -51,6 +51,33 @@ public class EjercicioGestor {
         }
     }
 
+    // getters to expose progress/time so caller can persist historico
+    public int getEjercicioIndex() {
+        return ejercicioIndex;
+    }
+
+    public int getSerieIndex() {
+        return serieIndex;
+    }
+
+    public int getTotalActiveSeconds() {
+        return totalActiveSeconds;
+    }
+
+    public int getTotalEjercicios() {
+        return ejercicios != null ? ejercicios.size() : 0;
+    }
+
+    public int getCompletedExercisesPercentage() {
+        int total = getTotalEjercicios();
+        if (total == 0) return 0;
+        int completed = Math.min(ejercicioIndex, total);
+        // integer division gives floor: e.g. 2*100/3 == 66
+        int pct = (completed * 100) / total;
+        if (pct > 100) pct = 100;
+        return pct;
+    }
+
     public void start() {
         if (running || ejercicios.isEmpty()) return;
         running = true;

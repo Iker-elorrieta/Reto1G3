@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 public class Workout implements Serializable {
 	private static final long serialVersionUID = 1L;
+	private String id;
 	private int nivel;
 	private String nombre;
 	private int numeroEjercicios;
@@ -26,6 +27,14 @@ public class Workout implements Serializable {
 		this.numeroEjercicios = 0;
 		this.ejercicios = new ArrayList<>(); // FIXED
 		this.video = null;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public int getNivel() {
@@ -67,7 +76,6 @@ public class Workout implements Serializable {
 	public void setEjercicios(ArrayList<Ejercicio> ejercicios) {
 		this.ejercicios = ejercicios;
 	}
-	
 	
 	
 	
