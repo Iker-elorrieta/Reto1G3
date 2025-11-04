@@ -130,13 +130,25 @@ public class BackupProceso {
 			for (QueryDocumentSnapshot document : documents) {
 				Workout workout = new Workout();
 
+				// IMPORTANTE: Guardar el ID del documento (que es el nivel)
+				workout.setId(document.getId());
+				
 				workout.setNombre(document.getString("nombre"));
 				if (document.contains("numeroEjercicios") && document.getLong("numeroEjercicios") != null) {
 					workout.setNumeroEjercicios(document.getLong("numeroEjercicios").intValue());
 				}
-				if (document.contains("nivel") && document.getLong("nivel") != null) {
-					workout.setNivel(document.getLong("nivel").intValue());
+				
+				// Intentar obtener el nivel del ID primero, luego del campo nivel
+				try {
+					workout.setNivel(Integer.parseInt(document.getId()));
+				} catch (NumberFormatException e) {
+					if (document.contains("nivel") && document.getLong("nivel") != null) {
+						workout.setNivel(document.getLong("nivel").intValue());
+					} else {
+						workout.setNivel(0);
+					}
 				}
+				
 				workout.setVideo(document.getString("video"));
 
 				ApiFuture<QuerySnapshot> ejerciciosFuture = document.getReference().collection("Ejercicios").get();

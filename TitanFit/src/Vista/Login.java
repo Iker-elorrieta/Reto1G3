@@ -5,6 +5,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import Backup.Backup;
+import Modelo_Pojos.Firebase;
 import Modelo_Pojos.Usuario;
 
 import javax.swing.JLabel;
@@ -81,10 +82,12 @@ public class Login extends JFrame {
 				Usuario user = Controlador.LoginControlador.loginUsuario(textFieldLoginUsuario.getText(), password);
 				if (user != null) {
 
-					
-					Backup backup = new Backup();
-					backup.crearProceso();
-
+					if(Firebase.isConectado()) {
+						Backup backup = new Backup();
+						backup.crearProceso();
+					} else {
+						System.out.println("No se hace el backup vista");
+					}
 					
 					
 					JFrame workouts = new Workouts(user);

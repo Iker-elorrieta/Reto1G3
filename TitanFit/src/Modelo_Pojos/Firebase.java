@@ -2,6 +2,7 @@ package Modelo_Pojos;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 
 import com.google.auth.oauth2.GoogleCredentials;
@@ -20,6 +21,7 @@ public class Firebase {
     private String auth_provider_x509_cert_url;
     private String client_x509_cert_url;
     private String universe_domain;
+    private static boolean conectado = false;
 
     public Firebase() {
         this.type = "service_account";
@@ -64,6 +66,20 @@ public class Firebase {
         this.client_x509_cert_url = "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40titanfit-bd4c0.iam.gserviceaccount.com";
         this.universe_domain = "googleapis.com";
     }
+    
+    public static boolean isConectado() {
+        return conectado;
+    }
+    
+    public static void marcarConectado() {
+        conectado = true;
+        System.out.println("Firebase marcado como conectado");
+    }
+    
+    public static void marcarDesconectado() {
+        conectado = false;
+        System.out.println("Firebase marcado como desconectado");
+    }
 
     public static void inicializarFirebase() throws Exception {
         if (FirebaseApp.getApps().isEmpty()) {
@@ -75,9 +91,18 @@ public class Firebase {
                         .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                         .build();
                 FirebaseApp.initializeApp(options);
+                conectado = true;
+            } catch (UnknownHostException uhe) {
+            	conectado = false;
+            	System.out.println("Error de red al conectar con Firebase: ");
+            } catch (Exception e) {
+            	conectado = false;
+				throw new Exception("Error al inicializar Firebase: " + e.getMessage());
             }
         }
     }
+    
+    
 
     private String toJson() {
         String escapedKey = private_key.replace("\n", "\\n").replace("\r", "");
