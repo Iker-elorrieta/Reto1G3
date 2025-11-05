@@ -127,53 +127,41 @@ public class LoginGestor {
 	}
 
 	public static boolean registrarUsuario(Usuario usuario, String passwordSinHash) {
-	    try {
-	        try {
-	            FirebaseControlador.inicializarFirebase();
-	        } catch (Throwable t) {
-	        }
+		try {
+			try {
+				FirebaseControlador.inicializarFirebase();
+			} catch (Throwable t) {
+			}
 
-	        Firestore db = FirestoreClient.getFirestore();
-	        DocumentReference docRef = db.collection("Usuarios").document(usuario.getEmail());
+			Firestore db = FirestoreClient.getFirestore();
+			DocumentReference docRef = db.collection("Usuarios").document(usuario.getEmail());
 
-	        ApiFuture<DocumentSnapshot> future = docRef.get();
-	        DocumentSnapshot document = future.get();
-	        if (document.exists()) {
-	            return false;
-	        }
+			ApiFuture<DocumentSnapshot> future = docRef.get();
+			DocumentSnapshot document = future.get();
+			if (document.exists()) {
 
-	        String hashedPassword = Usuario.setPasswordConHash(passwordSinHash);
-	        usuario.setPassword(hashedPassword);
+				return false;
+			}
 
-	        Map<String, Object> data = new HashMap<>();
-	        data.put("nombre", usuario.getNombre());
-	        data.put("apellidos", usuario.getApellidos());
-	        data.put("fechaNacimiento", usuario.getFechaNacimiento());
-	        data.put("contraseña", usuario.getPassword());
-	        data.put("nivel", usuario.getNivel());
-	        data.put("esTrainer", false);
+			String hashedPassword = Usuario.setPasswordConHash(passwordSinHash);
+			usuario.setPassword(hashedPassword);
 
-	        ApiFuture<WriteResult> result = docRef.set(data);
-	        result.get();
+			Map<String, Object> data = new HashMap<>();
+			data.put("nombre", usuario.getNombre());
+			data.put("apellidos", usuario.getApellidos());
+			data.put("fechaNacimiento", usuario.getFechaNacimiento());
+			data.put("contraseña", usuario.getPassword());
+			data.put("nivel", usuario.getNivel());
+			data.put("esTrainer", false);
 
-	        DocumentReference historicoRef = db.collection("Usuarios")
-	            .document(usuario.getEmail())
-	            .collection("Historico")
-	            .document("init");
-	        
-	        Map<String, Object> initDoc = new HashMap<>();
-	        initDoc.put("created", new java.util.Date());
-	        
-	        ApiFuture<WriteResult> historicoResult = historicoRef.set(initDoc);
-	        historicoResult.get();
-
-	        return true;
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        return false;
-	    }
+			ApiFuture<WriteResult> result = docRef.set(data);
+			result.get();
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
-
 
 	public static boolean actualizarUsuario(String originalEmail, Usuario usuario, String nuevaPasswordPlain) {
 		try {
