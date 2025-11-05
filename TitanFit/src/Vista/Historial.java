@@ -21,6 +21,8 @@ import java.awt.Color;
 import Controlador.HistoricoControlador;
 import Modelo_Pojos.HistoricoDetalle;
 import java.util.List;
+import java.util.Collections;
+import java.util.Comparator;
 import java.text.SimpleDateFormat;
 
 
@@ -78,7 +80,14 @@ public class Historial extends JFrame {
         };
 
        
-        DefaultTableModel model = new DefaultTableModel(datos, columnas);
+        DefaultTableModel model = new DefaultTableModel(datos, columnas) {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Hacer todas las celdas no editables
+            }
+        };
 
         
         table = new JTable(model);
@@ -88,7 +97,18 @@ public class Historial extends JFrame {
             String userEmail = (usuario != null) ? usuario.getEmail() : "";
             List<HistoricoDetalle> historicos = HistoricoControlador.obtenerHistoricoUsuario(userEmail);
             SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+            
+            // Ordenar por fecha descendente (más recientes primero)
             if (historicos != null) {
+                Collections.sort(historicos, new Comparator<HistoricoDetalle>() {
+                    @Override
+                    public int compare(HistoricoDetalle h1, HistoricoDetalle h2) {
+                        if (h1.getFecha() == null) return 1;
+                        if (h2.getFecha() == null) return -1;
+                        return h2.getFecha().compareTo(h1.getFecha()); // Orden descendente
+                    }
+                });
+                
                 for (HistoricoDetalle h : historicos) {
                     String fechaStr = (h.getFecha() != null) ? df.format(h.getFecha()) : "";
                     String tiempoTotalStr = formatMillis(h.getTiempoTotal());

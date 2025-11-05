@@ -248,7 +248,6 @@ public class BackupProceso {
 			StreamResult result = new StreamResult(new File("historicos.xml"));
 			transformer.transform(source, result);
 
-			System.out.println("XML generado correctamente.");
 
 		} catch (Exception e) {
 			e.printStackTrace();
