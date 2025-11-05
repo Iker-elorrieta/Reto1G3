@@ -1,5 +1,6 @@
 package Controlador;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import Modelo_Gestor.EjercicioGestor;
@@ -10,9 +11,36 @@ public class EjercicioControlador {
     private Ejercicio vista;
     private EjercicioGestor gestor;
 
-    public EjercicioControlador(Ejercicio vista, java.util.ArrayList<Modelo_Pojos.Ejercicio> ejercicios) {
+    public EjercicioControlador(Ejercicio vista, ArrayList<Modelo_Pojos.Ejercicio> ejercicios) {
         this.setVista(vista);
         this.gestor = new EjercicioGestor(ejercicios);
+        this.gestor.setListener(new EjercicioGestor.Listener() {
+            @Override
+            public void onState(String state) {
+                vista.setEstado(state);
+            }
+
+            @Override
+            public void onWorkoutTime(int totalSeconds) {
+                vista.setWorkoutTime(totalSeconds);
+            }
+
+            @Override
+            public void onSeriesUpdate(int ejercicioIndex, int serieIndex, int remainingSeconds, List<Integer> originalTimes, boolean inDescanso) {
+                vista.onSeriesUpdate(ejercicioIndex, serieIndex, remainingSeconds, originalTimes, inDescanso);
+            }
+
+            @Override
+            public void onFinished() {
+                vista.onFinished();
+            }
+        });
+    }
+
+    // Constructor que usa backup cuando no hay internet
+    public EjercicioControlador(Ejercicio vista, ArrayList<Modelo_Pojos.Ejercicio> ejercicios, boolean hayInternet) {
+        this.setVista(vista);
+        this.gestor = new EjercicioGestor(ejercicios, hayInternet);
         this.gestor.setListener(new EjercicioGestor.Listener() {
             @Override
             public void onState(String state) {
